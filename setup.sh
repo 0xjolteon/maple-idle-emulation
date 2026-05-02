@@ -80,4 +80,18 @@ services:
       #- ro.ndk_translation.version=0.2.2
 EOF
 
+echo "Starting docker container..."
+sudo docker compose up -d
+
+echo "Waiting for redroid to start..."
+until adb connect 127.0.0.1:5555 2>&1 | grep -q "connected"; do
+    sleep 2
+done
+
+echo "Device connected, waiting for boot to complete..."
+adb -s 127.0.0.1:5555 wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 2; done'
+
+echo "Pushing KISS launcher..."
+adb -s 127.0.0.1:5555 install ~/maple-idle-emulation/KISS.apk
+
 echo "Setup complete. Run start.sh to start the container."
